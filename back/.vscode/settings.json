@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\btuser\\user-detail-app\\back\\.myenv\\Scripts\\python.exe",
+  "python.analysis.extraPaths": [
+    "C:\\Users\\btuser\\user-detail-app\\back"
+  ]
+}
