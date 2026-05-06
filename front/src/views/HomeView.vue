@@ -8,8 +8,6 @@
       </button>
     </div>
 
- 
-
     <div class="grid">
       <UserCard
         v-for="user in filteredUsers"
@@ -23,11 +21,28 @@
       <div class="modal">
         <h2>New User</h2>
 
-        <input v-model="form.name" placeholder="Name" />
-        <input v-model="form.username" placeholder="Username" />
-        <input v-model="form.email" placeholder="Email" />
+        <input
+          v-model="form.name"
+          :class="{ 'input-error': formErrors.name }"
+          placeholder="Name"
+        />
 
-        <div class="select-wrapper">
+        <input
+          v-model="form.username"
+          :class="{ 'input-error': formErrors.username }"
+          placeholder="Username"
+        />
+
+        <input
+          v-model="form.email"
+          :class="{ 'input-error': formErrors.email }"
+          placeholder="Email - @ necessary"
+        />
+
+        <div
+          class="select-wrapper"
+          :class="{ 'input-error': formErrors.company }"
+        >
           <select v-model="form.company">
             <option value="">Select company</option>
 
@@ -44,8 +59,37 @@
         </div>
 
         <div class="modal-actions">
-          <button class="cancel-btn" @click="closeModal">Cancel</button>
-          <button class="save-btn" @click="saveUser">Save</button>
+          <button class="cancel-btn" @click="closeModal">
+            Cancel
+          </button>
+
+          <button class="save-btn" @click="saveUser">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="showDeleteDialog"
+      class="overlay"
+      @click.self="cancelDeleteUser"
+    >
+      <div class="confirm-dialog">
+        <h2>Should the user be deleted?</h2>
+
+        <p>
+          This action is irreversible. The user will be permanently deleted.
+        </p>
+
+        <div class="modal-actions">
+          <button class="cancel-btn" @click="cancelDeleteUser">
+            Cancel  
+          </button>
+
+          <button class="delete-btn" @click="confirmDeleteUser">
+            Delete
+          </button>
         </div>
       </div>
     </div>
@@ -55,8 +99,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import UserCard from '../components/UserCard.vue'
+import { useToastStore } from '../stores/toastStore'
 import { getCompanies } from '../modules/company/services/companyService'
-
 
 import {
   getAllUsers,
@@ -64,21 +108,37 @@ import {
   deleteUser,
 } from '../services/userService'
 
+const toastStore = useToastStore()
+
 const users = ref([])
 const search = ref('')
 const showModal = ref(false)
 const companies = ref([])
 
+const showDeleteDialog = ref(false)
+const selectedUserId = ref(null)
+
 const form = reactive({
   name: '',
   username: '',
   email: '',
-  company:"",
+  company: '',
+})
+
+const formErrors = reactive({
+  name: false,
+  username: false,
+  email: false,
+  company: false,
 })
 
 onMounted(async () => {
-  users.value = await getAllUsers()
-  companies.value = await getCompanies()
+  try {
+    users.value = await getAllUsers()
+    companies.value = await getCompanies()
+  } catch (error) {
+    toastStore.showError('Veriler alınırken hata oluştu.')
+  }
 })
 
 const filteredUsers = computed(() => {
@@ -89,39 +149,84 @@ const filteredUsers = computed(() => {
 })
 
 function openModal() {
+  resetForm()
   showModal.value = true
 }
 
 function closeModal() {
   showModal.value = false
+  resetForm()
+}
+
+function resetForm() {
   form.name = ''
   form.username = ''
   form.email = ''
-  form.companies  = "" 
+  form.company = ''
+
+  formErrors.name = false
+  formErrors.username = false
+  formErrors.email = false
+  formErrors.company = false
+}
+
+function validateForm() {
+  formErrors.name = !form.name.trim()
+  formErrors.username = !form.username.trim()
+  formErrors.email = !form.email.trim() || !form.email.includes('@')
+  formErrors.company = !form.company
+
+  return !Object.values(formErrors).some(Boolean)
 }
 
 async function saveUser() {
-  if (!form.name.trim() || !form.username.trim() || !form.email.trim()) {
-    alert('Name, username ve email zorunlu')
+  if (!validateForm()) {
+    toastStore.showError('Lütfen kırmızı alanları doğru doldurun.')
     return
   }
 
-  const created = await createUser({
-    name: form.name,
-    username: form.username,
-    email: form.email,
-    company: form.company || null,
-  })
+  try {
+    const created = await createUser({
+      name: form.name,
+      username: form.username,
+      email: form.email,
+      company: form.company,
+    })
 
-  users.value.unshift(created)
-  closeModal()
+    users.value.unshift(created)
+
+    toastStore.showSuccess('User created successfully.')
+    closeModal()
+  } catch (error) {
+    toastStore.showError('An error occurred while creating the user..')
+  }
 }
 
-async function removeUser(id) {
-  if (!confirm('Should this user be deleted?')) return
+function removeUser(id) {
+  selectedUserId.value = id
+  showDeleteDialog.value = true
+}
 
-  await deleteUser(id)
-  users.value = users.value.filter((user) => user.id !== id)
+async function confirmDeleteUser() {
+  try {
+    await deleteUser(selectedUserId.value)
+
+    users.value = users.value.filter(
+      (user) => user.id !== selectedUserId.value
+    )
+
+    toastStore.showSuccess('User deleted successfully.')
+  } catch (error) {
+    toastStore.showError('An error occurred while deleting the user.')
+  } finally {
+    showDeleteDialog.value = false
+    selectedUserId.value = null
+  }
+}
+
+function cancelDeleteUser() {
+  showDeleteDialog.value = false
+  selectedUserId.value = null
 }
 </script>
 
@@ -149,15 +254,6 @@ async function removeUser(id) {
   cursor: pointer;
 }
 
-.search {
-  width: 320px;
-  padding: 13px 15px;
-  border-radius: 12px;
-  border: 1px solid #dbe1ea;
-  margin-bottom: 24px;
-  outline: none;
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -174,15 +270,23 @@ async function removeUser(id) {
   z-index: 50;
 }
 
-.modal {
+.modal,
+.confirm-dialog {
   width: 420px;
   background: white;
   border-radius: 22px;
   padding: 26px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
 }
 
-.modal h2 {
+.modal h2,
+.confirm-dialog h2 {
   margin: 0 0 20px;
+}
+
+.confirm-dialog p {
+  color: #64748b;
+  margin-bottom: 24px;
 }
 
 .modal input {
@@ -192,6 +296,21 @@ async function removeUser(id) {
   border: 1px solid #dbe1ea;
   border-radius: 12px;
   margin-bottom: 12px;
+}
+
+.input-error {
+  border-color: #dc2626 !important;
+  background: #fff1f2 !important;
+}
+
+.input-error select {
+  border-color: #dc2626 !important;
+  background: #fff1f2 !important;
+}
+
+.input-error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
 }
 
 .modal-actions {
@@ -219,6 +338,14 @@ async function removeUser(id) {
   cursor: pointer;
 }
 
+.delete-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 11px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+}
 
 .select-wrapper {
   position: relative;
@@ -231,20 +358,18 @@ async function removeUser(id) {
   padding: 13px 14px;
   border: 1px solid #dbe1ea;
   border-radius: 12px;
-  appearance: none; /* 🔥 default ok gider */
+  appearance: none;
   background: white;
   font-size: 14px;
   outline: none;
   cursor: pointer;
 }
 
-/* hover / focus */
 .select-wrapper select:focus {
   border-color: #6c5ce7;
   box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
 }
 
-/* custom arrow */
 .arrow {
   position: absolute;
   right: 14px;
@@ -254,6 +379,4 @@ async function removeUser(id) {
   color: #64748b;
   font-size: 14px;
 }
-
-
 </style>

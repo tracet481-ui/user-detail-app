@@ -10,10 +10,10 @@ const sendTestUser = async () => {
     })
 
     console.log(response)
-    alert('Başarılı')
+    toastStore.showSuccess('Başarılı ')
   } catch (error) {
     console.error(error)
-    alert('İstek başarısız')
+    toastStore.showSuccess('İstek Başarsız! ')
   }
 }
 </script>

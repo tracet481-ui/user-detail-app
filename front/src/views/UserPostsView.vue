@@ -13,6 +13,14 @@
 
     <div class="post-list">
       <div v-for="post in posts" :key="post.id" class="post-card">
+        <div class="post-top">
+          <span class="post-badge">Post</span>
+
+          <span class="post-date">
+            {{ formatDate(post.created_at) }}
+          </span>
+        </div>
+
         <div class="post-content">
           <h3>{{ post.title }}</h3>
           <p>{{ post.body }}</p>
@@ -90,6 +98,9 @@
                 <div class="comment-head">
                   <strong>{{ comment.name }}</strong>
                   <span>{{ comment.email }}</span>
+                  <span class="comment-date">
+                    {{ formatDate(comment.created_at) }}
+                  </span>
                 </div>
 
                 <p>{{ comment.body }}</p>
@@ -285,6 +296,22 @@ import { getUserById } from '../services/userService'
 
 
 
+  function formatDate(date) {
+    if (!date) return ""
+
+    return new Date(date).toLocaleDateString ("tr-TR", {
+      day :  "2-digit",
+      month : "2-digit",
+      year : "numeric",
+      hour : "2-digit",
+      minute : "2-digit",
+    })
+
+
+  }
+
+
+
 </script>
 
 <style scoped>
@@ -328,50 +355,87 @@ import { getUserById } from '../services/userService'
 .post-list {
   flex: 1;
   overflow-y: auto;
-  padding-right: 8px;
+  padding: 44px 14px 44 px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
 .post-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 22px;
-  padding: 24px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+  border: 1px solid #e7e5ff;
+  border-radius: 26px;
+  padding: 28px 30px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+  transition: 0.2s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 46px rgba(15, 23, 42, 0.1);
+}
+
+.post-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.post-badge {
+  background: #eeeafe;
+  color: #6c5ce7;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.post-date {
+  color: #94a3b8;
+  font-size: 12px;
 }
 
 .post-content h3 {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   color: #111827;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .post-content p {
   margin: 0;
-  color: #64748b;
-  line-height: 1.6;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.75;
+  max-width: 920px;
 }
 
 .post-actions {
   display: flex;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .see-btn {
   background: #6c5ce7;
   color: white;
   border: none;
-  padding: 10px 16px;
+  padding: 12px 18px;
   border-radius: 14px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 10px 22px rgba(108, 92, 231, 0.24);
 }
 
 .edit-btn {
   background: #f1f5f9;
   color: #334155;
   border: none;
-  padding: 10px 16px;
+  padding: 12px 17px;
   border-radius: 14px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -379,8 +443,9 @@ import { getUserById } from '../services/userService'
   background: #fee2e2;
   color: #dc2626;
   border: none;
-  padding: 10px 16px;
+  padding: 12px 17px;
   border-radius: 14px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -553,4 +618,20 @@ import { getUserById } from '../services/userService'
   padding-top: 16px;
   background: white;
 }
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.comment-date {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 2px 0 0;
+}
+
+
 </style>

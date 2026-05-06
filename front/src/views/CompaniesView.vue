@@ -21,18 +21,18 @@
 
         <div class="company-info">
           <h2>{{ company.name }}</h2>
-          <p>{{ company.slogan || 'Slogan yok' }}</p>
+          <p>{{ company.slogan || 'No Slogan' }}</p>
 
           <div class="meta">
-            <span>🌐 {{ company.website || 'Website yok' }}</span>
-            <span>📞 {{ company.phone || 'Telefon yok' }}</span>
-            <span>📍 {{ company.address || 'Adres yok' }}</span>
+            <span>🌐 {{ company.website || 'No Website ' }}</span>
+            <span>📞 {{ company.phone || 'No Phone ' }}</span>
+            <span>📍 {{ company.address || 'No Adress ' }}</span>
           </div>
         </div>
 
         <div class="actions">
           <button class="edit-btn" @click="openEdit(company)">
-            Düzenle
+            Edit
           </button>
 
           <button class="delete-btn" @click="removeCompany(company.id)">
@@ -42,19 +42,42 @@
       </article>
 
       <div v-if="!companies.length" class="empty">
-        Henüz company yok.
+        No companies yet.
       </div>
     </div>
 
     <div v-if="showModal" class="overlay" @click.self="closeModal">
       <div class="modal">
-        <h2>{{ editingCompany ? 'Company Düzenle' : 'New Company' }}</h2>
+        <h2>{{ editingCompany ? 'Edit Company' : 'New Company' }}</h2>
 
-        <input v-model="form.name" placeholder="Company name" />
-        <input v-model="form.slogan" placeholder="Slogan" />
-        <input v-model="form.website" placeholder="Website" />
-        <input v-model="form.phone" placeholder="Phone" />
-        <textarea v-model="form.address" placeholder="Address"></textarea>
+    <input
+      v-model="form.name"
+      :class="{ 'input-error': formErrors.name }"
+      placeholder="Company name"
+    />
+
+    <input
+      v-model="form.slogan"
+      placeholder="Slogan"
+    />
+
+    <input
+      v-model="form.website"
+      :class="{ 'input-error': formErrors.website }"
+      placeholder="Website - @ zorunlu"
+    />
+
+    <input
+      v-model="form.phone"
+      :class="{ 'input-error': formErrors.phone }"
+      placeholder="Phone - sayı zorunlu"
+    />
+
+    <textarea
+      v-model="form.address"
+      :class="{ 'input-error': formErrors.address }"
+      placeholder="Address"
+    ></textarea>
 
         <div class="modal-actions">
           <button class="cancel-btn" @click="closeModal">
@@ -67,11 +90,36 @@
         </div>
       </div>
     </div>
+
+    <div
+      v-if="showDeleteDialog"
+      class="overlay"
+      @click.self="cancelDeleteCompany"
+    >
+      <div class="confirm-dialog">
+        <h2>Should the company be deleted?</h2>
+
+        <p>
+          This action is irreversible. The company registration will be permanently deleted.
+        </p>
+
+        <div class="modal-actions">
+          <button class="cancel-btn" @click="cancelDeleteCompany">
+            Cancel
+          </button>
+
+          <button class="delete-btn" @click="confirmDeleteCompany">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useToastStore } from '../stores/toastStore'
 
 import {
   getCompanies,
@@ -80,9 +128,16 @@ import {
   deleteCompany,
 } from '../modules/company/services/companyService'
 
+  
+
 const companies = ref([])
 const showModal = ref(false)
 const editingCompany = ref(null)
+
+const showDeleteDialog = ref(false)
+const selectedCompanyId = ref(null)
+
+const toastStore = useToastStore()
 
 const form = reactive({
   name: '',
@@ -97,7 +152,11 @@ onMounted(async () => {
 })
 
 async function loadCompanies() {
-  companies.value = await getCompanies()
+  try {
+    companies.value = await getCompanies()
+  } catch (error) {
+    toastStore.showError('An error occurred while retrieving the company list.')
+  }
 }
 
 function openCreate() {
@@ -125,16 +184,15 @@ function closeModal() {
 }
 
 function resetForm() {
-  form.name = ''
-  form.slogan = ''
-  form.website = ''
-  form.phone = ''
-  form.address = ''
+  formErrors.name = false
+  formErrors.website = false
+  formErrors.phone = false
+  formErrors.address = false
 }
 
 async function saveCompany() {
-  if (!form.name.trim()) {
-    alert('Company name zorunlu')
+  if (!validateForm()) {
+    toastStore.showError('Please fill in the red areas correctly.')
     return
   }
 
@@ -146,25 +204,79 @@ async function saveCompany() {
     address: form.address,
   }
 
-  if (editingCompany.value) {
-    const updated = await updateCompany(editingCompany.value.id, payload)
+  try {
+    if (editingCompany.value) {
+      const updated = await updateCompany(editingCompany.value.id, payload)
 
-    const index = companies.value.findIndex((c) => c.id === updated.id)
-    companies.value[index] = updated
-  } else {
-    const created = await createCompany(payload)
-    companies.value.unshift(created)
+      const index = companies.value.findIndex((c) => c.id === updated.id)
+
+      if (index !== -1) {
+        companies.value[index] = updated
+      }
+
+      toastStore.showSuccess('Company updated successfully.')
+    } else {
+      const created = await createCompany(payload)
+      companies.value.unshift(created)
+
+      toastStore.showSuccess('Company added successfully.')
+    }
+
+    closeModal()
+  } catch (error) {
+    toastStore.showError('An error occurred while registering the company..')
   }
-
-  closeModal()
 }
 
-async function removeCompany(id) {
-  if (!confirm('Company silinsin mi?')) return
-
-  await deleteCompany(id)
-  companies.value = companies.value.filter((company) => company.id !== id)
+function removeCompany(id) {
+  selectedCompanyId.value = id
+  showDeleteDialog.value = true
 }
+
+async function confirmDeleteCompany() {
+  try {
+    await deleteCompany(selectedCompanyId.value)
+
+    companies.value = companies.value.filter(
+      (company) => company.id !== selectedCompanyId.value
+    )
+
+    toastStore.showSuccess('Company was successfully deleted.')
+  } catch (error) {
+    toastStore.showError('An error occurred while deleting Company.')
+  } finally {
+    showDeleteDialog.value = false
+    selectedCompanyId.value = null
+  }
+}
+
+function cancelDeleteCompany() {
+  showDeleteDialog.value = false
+  selectedCompanyId.value = null
+}
+
+const formErrors = reactive({
+  name : false,
+  wwebsite : false,
+  phone : false,
+  address : false,
+
+})
+
+
+function validateForm () {
+
+  formErrors.name = !form.name.trim ()
+  formErrors.website = !form.name.trim () || !form.website.includes("@")
+  formErrors.phone = !form.phone.trim () || !/\d/.test(form.phone)
+  formErrors.address =  !form.address.trim ()
+
+  return !Object.values(formErrors).some(Boolean) 
+
+}
+
+
+
 </script>
 
 <style scoped>
@@ -304,16 +416,25 @@ async function removeCompany(id) {
   padding: 24px;
 }
 
-.modal {
+.modal,
+.confirm-dialog {
   width: 460px;
   background: #fff;
   border-radius: 24px;
   padding: 26px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
 }
 
-.modal h2 {
+.modal h2,
+.confirm-dialog h2 {
   margin: 0 0 20px;
   color: #111827;
+}
+
+.confirm-dialog p {
+  margin: 0 0 22px;
+  color: #64748b;
+  line-height: 1.5;
 }
 
 .modal input,
@@ -352,4 +473,19 @@ async function removeCompany(id) {
   border-radius: 14px;
   cursor: pointer;
 }
+
+
+.modal input.input-error,
+.modal textarea.input-error {
+  border-color: #dc2626;
+  background: #fff1f2;
+}
+
+.modal input.input-error:focus,
+.modal textarea.input-error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
+}
+
+
 </style>
