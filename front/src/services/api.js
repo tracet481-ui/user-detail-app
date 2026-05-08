@@ -100,37 +100,31 @@
 // export const getCommentsByPost = async () => []
 
 
+  // -------------------------------------------------------------------------------------------------
 
+import axios from 'axios'
 
-  const BASE_URL = 'http://127.0.0.1:8000/api'
+const api = axios.create({
+  baseURL: 'http://127.0.0.1:8000/api',
+})
 
-export async function request(endpoint, options = {}) {
-  const response = await fetch(`${BASE_URL}${endpoint}`, options)
+api.interceptors.response.use(
+  (response) => response,
 
-  if (!response.ok) {
+  (error) => {
     let message = 'Bir hata oluştu.'
 
-    try {
-      const errorData = await response.json()
-      message = errorData.detail || JSON.stringify(errorData)
-    } catch {
-      message = response.statusText || 'Request failed.'
+    if (error.response?.data) {
+      const data = error.response.data
+
+      message =
+        data.detail ||
+        data.message ||
+        JSON.stringify(data)
     }
 
-    throw new Error(message)
+    return Promise.reject(new Error(message))
   }
+)
 
-  if (response.status === 204) return null
-
-  return response.json()
-}
-
-export function jsonRequest(endpoint, method, data) {
-  return request(endpoint, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
-}
+export default api

@@ -1,35 +1,63 @@
-import { request, jsonRequest } from '../../../services/api'
+import api from '../../../services/api'
 
-export const getAlbumsByUser = (userId) =>
-  request(`/albums/?user=${userId}`)
+export async function getAlbumsByUser(userId) {
+  const response = await api.get(
+    `/albums/?user=${userId}`
+  )
 
-export const createAlbum = (data) =>
-  jsonRequest('/albums/', 'POST', data)
+  return response.data
+}
 
-export const updateAlbum = (id, data) =>
-  jsonRequest(`/albums/${id}/`, 'PATCH', data)
+export async function createAlbum(data) {
+  const response = await api.post(
+    '/albums/',
+    data
+  )
 
-export const deleteAlbum = (id) =>
-  request(`/albums/${id}/`, {
-    method: 'DELETE',
-  })
+  return response.data
+}
 
-export const getPhotosByAlbum = (albumId) =>
-  request(`/albums/${albumId}/photos/`)
+export async function updateAlbum(id, data) {
+  const response = await api.patch(
+    `/albums/${id}/`,
+    data
+  )
 
-export const uploadPhoto = (albumId, file, title = '') => {
+  return response.data
+}
+
+export async function deleteAlbum(id) {
+  await api.delete(`/albums/${id}/`)
+  return true
+}
+
+export async function getPhotosByAlbum(albumId) {
+  const response = await api.get(
+    `/albums/${albumId}/photos/`
+  )
+
+  return response.data
+}
+
+export async function uploadPhoto(
+  albumId,
+  file,
+  title = ''
+) {
   const formData = new FormData()
 
   formData.append('image', file)
   formData.append('title', title || file.name)
 
-  return request(`/albums/${albumId}/photos/`, {
-    method: 'POST',
-    body: formData,
-  })
+  const response = await api.post(
+    `/albums/${albumId}/photos/`,
+    formData
+  )
+
+  return response.data
 }
 
-export const deletePhoto = (photoId) =>
-  request(`/albums/photos/${photoId}/`, {
-    method: 'DELETE',
-  })
+export async function deletePhoto(photoId) {
+  await api.delete(`/albums/photos/${photoId}/`)
+  return true
+}

@@ -1,15 +1,21 @@
-import { request, jsonRequest } from '../../../services/api'
+import api from '../../../services/api'
 
-export const getCommentsByPost = (postId) =>
-  request(`/comments/?post=${postId}`)
+export async function getCommentsByPost(postId) {
+  const response = await api.get(`/comments/?post=${postId}`)
+  return response.data
+}
 
-export const createComment = (data) =>
-  jsonRequest('/comments/', 'POST', data)
+export async function createComment(data) {
+  const response = await api.post('/comments/', data)
+  return response.data
+}
 
-export const updateComment = (id, data) =>
-  jsonRequest(`/comments/${id}/`, 'PATCH', data)
+export async function updateComment(id, data) {
+  const response = await api.patch(`/comments/${id}/`, data)
+  return response.data
+}
 
-export const deleteComment = (id) =>
-  request(`/comments/${id}/`, {
-    method: 'DELETE',
-  })
+export async function deleteComment(id) {
+  await api.delete(`/comments/${id}/`)
+  return true
+}

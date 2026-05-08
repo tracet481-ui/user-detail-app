@@ -1,15 +1,21 @@
-import { request, jsonRequest } from '../../../services/api'
+import api from '../../../services/api'
 
-export const getCompanies = () =>
-  request('/companies/')
+export async function getCompanies() {
+  const response = await api.get('/companies/')
+  return response.data
+}
 
-export const createCompany = (data) =>
-  jsonRequest('/companies/', 'POST', data)
+export async function createCompany(data) {
+  const response = await api.post('/companies/', data)
+  return response.data
+}
 
-export const updateCompany = (id, data) =>
-  jsonRequest(`/companies/${id}/`, 'PATCH', data)
+export async function updateCompany(id, data) {
+  const response = await api.patch(`/companies/${id}/`, data)
+  return response.data
+}
 
-export const deleteCompany = (id) =>
-  request(`/companies/${id}/`, {
-    method: 'DELETE',
-  })
+export async function deleteCompany(id) {
+  await api.delete(`/companies/${id}/`)
+  return true
+}

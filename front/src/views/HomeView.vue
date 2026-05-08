@@ -9,12 +9,21 @@
     </div>
 
     <div class="grid">
-      <UserCard
+      <!-- <UserCard
         v-for="user in filteredUsers"
         :key="user.id"
         :user="user"
-        @delete-user="removeUser"
-      />
+        @delete-user="removeUser" -->
+
+
+        <UserCard
+          v-for="user in filteredUsers"
+          :key="user.id"
+          :user="user"
+          @click="goToUser(user)"
+          @delete-user="removeUser"
+        />
+      
     </div>
 
     <div v-if="showModal" class="overlay" @click.self="closeModal">
@@ -101,6 +110,10 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import UserCard from '../components/UserCard.vue'
 import { useToastStore } from '../stores/toastStore'
 import { getCompanies } from '../modules/company/services/companyService'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/authStore'
+
+
 
 import {
   getAllUsers,
@@ -114,6 +127,10 @@ const users = ref([])
 const search = ref('')
 const showModal = ref(false)
 const companies = ref([])
+const router = useRouter()
+const authStore = useAuthStore()
+
+
 
 const showDeleteDialog = ref(false)
 const selectedUserId = ref(null)
@@ -228,6 +245,38 @@ function cancelDeleteUser() {
   showDeleteDialog.value = false
   selectedUserId.value = null
 }
+
+function goToLogin(user) {
+  router.push({
+    path : "/login",
+    query: {
+      userId : user.id,
+      username : user.username,
+    },
+  })
+}
+
+
+
+
+function goToUser(user) {
+  if (authStore.token) {
+    router.push(`/user/${user.id}/posts`)
+    return
+  }
+
+  router.push({
+    path: '/login',
+    query: {
+      userId: user.id,
+      username: user.username,
+    },
+  })
+}
+
+
+
+
 </script>
 
 <style scoped>

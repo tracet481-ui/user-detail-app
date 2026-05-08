@@ -1,49 +1,30 @@
-const BASE_URL = 'http://127.0.0.1:8000/api/users/'
+import api from './api'
 
-export const getAllUsers = async () => {
-  const response = await fetch(BASE_URL)
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch users')
-  }
-
-  return await response.json()
+export async function getAllUsers() {
+  const response = await api.get('/users/')
+  return response.data
 }
 
 export async function getUserById(id) {
-  const response = await fetch(`${BASE_URL}${id}/`)
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch user')
-  }
-
-  return await response.json()
+  const response = await api.get(`/users/${id}/`)
+  return response.data
 }
 
 export async function createUser(userData) {
-  const response = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  })
+  const response = await api.post('/users/', userData)
+  return response.data
+}
 
-  if (!response.ok) {
-    throw new Error('Failed to create user')
-  }
+export async function updateUser(id, userData) {
+  const response = await api.patch(
+    `/users/${id}/`,
+    userData
+  )
 
-  return await response.json()
+  return response.data
 }
 
 export async function deleteUser(id) {
-  const response = await fetch(`${BASE_URL}${id}/`, {
-    method: 'DELETE',
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to delete user')
-  }
-
+  await api.delete(`/users/${id}/`)
   return true
 }

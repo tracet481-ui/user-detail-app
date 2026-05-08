@@ -1,21 +1,23 @@
 <template>
   <div class="flex min-h-screen bg-slate-100">
-    <aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 bg-white p-5">
+    <!-- <aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 bg-white p-5">
       <RouterLink to="/" class="mb-8 block text-sm font-semibold text-slate-600">
         ← Go Home
       </RouterLink>
 
       <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <!-- <h2 class="font-bold text-slate-900">
+          <h2 class="font-bold text-slate-900">
           {{ userStore.selectedUser?.name || 'User' }}
         </h2>
         <p class="text-sm text-slate-500">
           @{{ userStore.selectedUser?.username || 'username' }}
         </p> -->
-      </div>
+      <!-- </div>
 
 
-    </aside>
+    </aside> 
+   -->
+  
 
     <main class="ml-64 min-h-screen flex-1 p-8">
       <RouterView />

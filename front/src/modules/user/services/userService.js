@@ -1,18 +1,37 @@
-import { request, jsonRequest } from '../../../services/api'
+import api from '../../../services/api'
 
-export const getUsers = () =>
-  request('/users/')
+export async function getAllUsers() {
+  const response = await api.get('/users/')
+  return response.data
+}
 
-export const getUserById = (id) =>
-  request(`/users/${id}/`)
+export async function getUserById(id) {
+  const response = await api.get(
+    `/users/${id}/`
+  )
 
-export const createUser = (data) =>
-  jsonRequest('/users/', 'POST', data)
+  return response.data
+}
 
-export const updateUser = (id, data) =>
-  jsonRequest(`/users/${id}/`, 'PATCH', data)
+export async function createUser(userData) {
+  const response = await api.post(
+    '/users/',
+    userData
+  )
 
-export const deleteUser = (id) =>
-  request(`/users/${id}/`, {
-    method: 'DELETE',
-  })
+  return response.data
+}
+
+export async function updateUser(id, userData) {
+  const response = await api.patch(
+    `/users/${id}/`,
+    userData
+  )
+
+  return response.data
+}
+
+export async function deleteUser(id) {
+  await api.delete(`/users/${id}/`)
+  return true
+}

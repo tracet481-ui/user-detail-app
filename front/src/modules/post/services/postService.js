@@ -1,15 +1,32 @@
-import { request, jsonRequest } from '../../../services/api'
+import api from '../../../services/api'
 
-export const getPostsByUser = (userId) =>
-  request(`/posts/?user=${userId}`)
+export async function getPostsByUser(userId) {
+  const response = await api.get(
+    `/posts/?user=${userId}`
+  )
 
-export const createPost = (data) =>
-  jsonRequest('/posts/', 'POST', data)
+  return response.data
+}
 
-export const updatePost = (id, data) =>
-  jsonRequest(`/posts/${id}/`, 'PATCH', data)
+export async function createPost(data) {
+  const response = await api.post(
+    '/posts/',
+    data
+  )
 
-export const deletePost = (id) =>
-  request(`/posts/${id}/`, {
-    method: 'DELETE',
-  })
+  return response.data
+}
+
+export async function updatePost(id, data) {
+  const response = await api.patch(
+    `/posts/${id}/`,
+    data
+  )
+
+  return response.data
+}
+
+export async function deletePost(id) {
+  await api.delete(`/posts/${id}/`)
+  return true
+}

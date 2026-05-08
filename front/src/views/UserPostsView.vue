@@ -172,9 +172,9 @@ const commentForm = reactive({
   body: '',
 })
 
-onMounted(async () => {
-  await loadPosts()
-})
+// onMounted(async () => {
+//   await loadPosts()
+// })
 
 async function loadPosts() {
   posts.value = await getPostsByUser(route.params.id)

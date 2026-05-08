@@ -13,3 +13,8 @@ class PostViewSet(ModelViewSet):
             queryset = queryset.filter(user_id=user)
 
         return queryset
+    
+    
+    def list(self, request, *args, **kwargs):
+        print("x")
+        return super().list(request, *args, **kwargs)

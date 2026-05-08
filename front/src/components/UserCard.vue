@@ -1,5 +1,5 @@
 <template>
-  <div class="user-card" @click="goDetail">
+  <div class="user-card" >
     <button class="delete-user-btn" @click.stop="$emit('delete-user', user.id)">
       Delete
     </button>
@@ -64,7 +64,7 @@ const avatarUrl = computed(() => {
 })
 
 function goDetail() {
-  router.push(`/user/${props.user.id}`)
+  // router.push(`/user/${props.user.id}`)
 }
 </script>
 
