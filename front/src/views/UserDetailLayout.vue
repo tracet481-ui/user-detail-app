@@ -27,15 +27,23 @@
 
 <script setup>
 import { onMounted, watch } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView,  } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
 
-const route = useRoute()
+  const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 
 async function loadUserDetail() {
-  if (!route.params.id) return
-  await userStore.fetchUserDetail(route.params.id)
+  const userId = route.params.id
+
+  if (!userId || userId === 'undefined') {
+    router.push('/')
+    return
+  }
+
+  await userStore.fetchUserDetail(userId)
 }
 
 onMounted(loadUserDetail)

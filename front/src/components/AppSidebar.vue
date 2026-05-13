@@ -1,7 +1,9 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-top">
-      <div class="user-profile">
+      <div   
+        v-if="authStore.token"
+        class="user-profile">
         <img
           class="avatar"
           src="https://i.pravatar.cc/100"
@@ -18,41 +20,43 @@
       </div>
 
       <nav class="nav-links">
-        <RouterLink
-          to="/"
-          class="nav-link"
-        >
-          Users
-        </RouterLink>
+          <RouterLink
+            to="/"
+            class="nav-link"
+          >
+            Users
+          </RouterLink>
 
-        <RouterLink
-          :to="`/user/${route.params.id}/posts`"
-          class="nav-link"
-        >
-          Posts
-        </RouterLink>
+          <template v-if="authStore.token">
+            <RouterLink
+              :to="`/user/${route.params.id}/posts`"
+              class="nav-link"
+            >
+              Posts
+            </RouterLink>
 
-        <RouterLink
-          :to="`/user/${route.params.id}/todos`"
-          class="nav-link"
-        >
-          Todos
-        </RouterLink>
+            <RouterLink
+              :to="`/user/${route.params.id}/todos`"
+              class="nav-link"
+            >
+              Todos
+            </RouterLink>
 
-        <RouterLink
-          :to="`/user/${route.params.id}/albums`"
-          class="nav-link"
-        >
-          Albums
-        </RouterLink>
+            <RouterLink
+              :to="`/user/${route.params.id}/albums`"
+              class="nav-link"
+            >
+              Albums
+            </RouterLink>
 
-        <RouterLink
-          :to="`/user/${route.params.id}/companies`"
-          class="nav-link"
-        >
-          Companies
-        </RouterLink>
-      </nav>
+            <RouterLink
+              :to="`/user/${route.params.id}/companies`"
+              class="nav-link"
+            >
+              Companies
+            </RouterLink>
+          </template>
+        </nav>
     </div>
 
     <button

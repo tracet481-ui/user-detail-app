@@ -1,18 +1,32 @@
 from rest_framework import viewsets
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status 
 from rest_framework.response import Response 
 from rest_framework.decorators import api_view
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+
 
 
 
 from .models import User
 from .serializers import UserSerializer
 
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def public_users(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)
+
+
+
 @api_view (["POST"]) 
-def  login_user (request ) : 
+@permission_classes([AllowAny])
+def login_user (request ) : 
     username = request.data.get("username")
     password = request.data.get("password")
 
@@ -42,12 +56,12 @@ def  login_user (request ) :
 
     refresh = RefreshToken.for_user(user)
 
-
+    print(str(refresh.access_token))
 
     return Response ({
-        "access " : str(refresh.access_token ),
-        "refresh " : str(refresh),
-        "user " : UserSerializer( user ).data,
+        "access" : str(refresh.access_token ),
+        "refresh" : str(refresh),
+        "user" : UserSerializer(user).data,
     }) 
 
 
@@ -58,8 +72,12 @@ def  login_user (request ) :
 
 
 class UserViewSet(viewsets.ModelViewSet):
-     queryset = User.objects.all()
-     serializer_class = UserSerializer
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def list(self, request, *args, **kwargs):
+        print("USERS LIST ÇALIŞTI")
+        return super().list(request, *args, **kwargs)
 
 
 

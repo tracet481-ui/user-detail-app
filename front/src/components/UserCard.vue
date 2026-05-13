@@ -1,5 +1,5 @@
 <template>
-  <div class="user-card" >
+  <div class="user-card">
     <button class="delete-user-btn" @click.stop="$emit('delete-user', user.id)">
       Delete
     </button>

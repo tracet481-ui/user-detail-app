@@ -4,12 +4,32 @@ from company.serializers import CompanySerializer
 
 class UserSerializer(serializers.ModelSerializer):
 
-    company_detail = CompanySerializer(source="company" , read_only= True)
+    company_detail = CompanySerializer(source="company" , read_only=True)
     
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = [
+            "id",
+            "name",
+            "username",
+            "email",
+            "password",
+            "company",
+            "company_detail",
+            "created_at",
+            "updated_at",
+        ]
+        extra_kwargs = {
+            "password": {"write_only": True, "required": False},
+        }
+
+
+
+
+    # class Meta:
+    #     model = User
+    #     fields = '__all__'
 
 
 # class PostSerializer(serializers.ModelSerializer):

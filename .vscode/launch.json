@@ -11,3 +11,21 @@
     }
   ]
 }
+
+
+
+
+// {
+//   "version": "0.2.0",
+//   "configurations": [
+//     {
+//       "name": "Python Debugger: Django",
+//       "type": "debugpy",
+//       "request": "launch",
+//       "program": "${workspaceFolder}/back/manage.py",
+//       "args": ["runserver", "--noreload"],
+//       "django": true,
+//       "justMyCode": false
+//     }
+//   ]
+// }

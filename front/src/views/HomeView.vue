@@ -260,6 +260,8 @@ function goToLogin(user) {
 
 
 function goToUser(user) {
+  if (!user?.id) return
+
   if (authStore.token) {
     router.push(`/user/${user.id}/posts`)
     return
